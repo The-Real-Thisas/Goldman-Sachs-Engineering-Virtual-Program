@@ -2,15 +2,11 @@
 
 ---
 
-## **Dumped File:**
-
-[passwd_dump.txt](docs/passwd_dump.txt)
-
 ## Cracking Process:
 
 ### Identification of Algorithm
 
-Through the use of a python-based tool `hashID` It was possible to identify the hashes as the result of MD5 encryption. This was later confirmed when after testing with `hashcat`.
+Through the use of a python-based tool `hashID` It was possible to identify the hashes as the result of MD5 hashing. This was later confirmed when after testing with `hashcat`.
 
 ```bash
 $ hashid "1f5c5683982d7c3814d4d9e6d749b21e"
@@ -20,7 +16,7 @@ Analyzing '1f5c5683982d7c3814d4d9e6d749b21e'
 
 ### Cracking
 
-After identifying the encryption algorithm the first step was to try cracking one password. Due to the underlying algorithm used for encryption, it is not possible to reverse the hash to plaintext instead the approach possible is to brute-force what plaintext is used to generate the hash. 
+After identifying the hashing algorithm the first step was to try cracking one password. Due to the underlying algorithm used for hashing, it is not possible to reverse the hash to plaintext instead the approach possible is to brute-force what plaintext is used to generate the hash. 
 
 For brute-forcing the plaintext a `wordlist` is required, the wordlist called `rockyou.txt` provided by kali linux is used.
 
@@ -92,7 +88,7 @@ Hash.Target......: e10adc3949ba59abbe56e057f20f883e
 Candidates.#1....: 123456 -> bethany
 ```
 
-`hashcat` was able to crack the hash in a mere 12 seconds and obtained the password as '123456'. Which if encrypted via MD5 gives the exact hash.
+`hashcat` was able to crack the hash in a mere 12 seconds and obtained the password as '123456'. Which if hashed via MD5 gives the exact hash.
 
 $$Md5(123456) = e10adc3949ba59abbe56e057f20f883e$$
 
@@ -136,7 +132,7 @@ f6a0cb102c62879d397b12b62c092c06:bluered
 
 ## Current Security Status
 
-The current system is capable of encrypting passwords using MD5 encryption which means if the password given by the client follows a strong password policy. It is in theory capable of protecting the passwords against brute-force attacks due to the nature of MD5 encryption. However, in practice, users use common passwords as seen in the passwords recovery conducted. This means attacks can use publicly available wordlists or buy wordlists from the dark web to then crack the hashes within a matter of time. Through testing of the password, dump provided the tool was able to crack most passwords in under 10 seconds. In conclusion, while in theory, the current system is capable of protecting the passwords, due to a poor password policy it is susceptible to brute force attacks with minimal effort. 
+The current system is capable of hashing passwords using MD5 hashing which means if the password given by the client follows a strong password policy. It is in theory capable of protecting the passwords against brute-force attacks due to the nature of MD5 hashing. However, in practice, users use common passwords as seen in the passwords recovery conducted. This means attacks can use publicly available wordlists or buy wordlists from the dark web to then crack the hashes within a matter of time. Through testing of the password, dump provided the tool was able to crack most passwords in under 10 seconds. In conclusion, while in theory, the current system is capable of protecting the passwords, due to a poor password policy it is susceptible to brute force attacks with minimal effort. 
 
 ## Password Policy
 
@@ -146,7 +142,7 @@ It is clear that the only requirement is a minimum of six digits.
 
 ## Frontend Suggestions (Password Policy)
 
-The current password policy is highly discouraged as it encourages users to adopt 'easy' passwords such as 'password' leading to hashes being susceptible to simple brute-force attacks by using publicly available wordlists. This results in a situation wherein no matter how powerful the encryption if the password policy is weak the password can always be guessed. 
+The current password policy is highly discouraged as it encourages users to adopt 'easy' passwords such as 'password' leading to hashes being susceptible to simple brute-force attacks by using publicly available wordlists. This results in a situation wherein no matter how powerful the hashing if the password policy is weak the password can always be guessed. 
 
 While different organisations adopt different password policies it is recommended to use the NIST (National Institute for Standards and Technology) guidelines. 
 
@@ -161,17 +157,17 @@ While different organisations adopt different password policies it is recommende
 
 ## Backend Suggestions
 
-While updating the password policy is a significant improvement it is also possible to make changes on the backend in order to make the encryption more secure in the case of a data breach. This is to apply the concept of salt in the form of MD5 Salt. 
+While updating the password policy is a significant improvement it is also possible to make changes on the backend in order to make the hashing more secure in the case of a data breach. This is to apply the concept of salt in the form of MD5 Salt. 
 
 There are two ways to do this: 
 
 ### Static Salt (Not Recommended)
 
-The first is using a static salt, here during encryption a salt or extra string is added to the plaintext password. 
+The first is using a static salt, here during hashing a salt or extra string is added to the plaintext password. 
 
 $$'123456' + 'secret' = '123456secret'$$
 
-Here, the 'secret' string is the salt which is used, this string should be kept a secret and only used in encryption and decryption. 
+Here, the 'secret' string is the salt that is used, this string should be kept secret and only used in hashing and decryption. 
 
 $$'123456'+'cDEFs8XdM'='123456cDEFs8XdM'$$
 
@@ -179,7 +175,7 @@ The has for which is:
 
 $$Md5(123456cDEFs8XdM) = 764d5a40514056152b58411008b5b609$$
 
-This will be stored in the database, the hacker which dumps the database will not have access to the salt as it is part of the encryption and decryption system which is isolated from the database itself. 
+This will be stored in the database, the hacker which dumps the database will not have access to the salt as it is part of the hashing system which is isolated from the database itself. 
 
 ```bash
 ┌──(kali㉿kali)-[~]
@@ -239,7 +235,7 @@ Stopped: Wed Jun 30 16:49:24 2021
 
 As seen above, the same attack used before is unable to crack the password from the wordlist used before. 
 
-The reason why its not recommended is because there is potencial that the encryption and decryption system itself gets reverse engineered and the static salt that is used for all the hashes get leaked which means all the extra protection from the salt is useless as the attacker can then use the salt along with a wordlist to crack the hashes like before. 
+The reason why it's not recommended is that it is possible that the hashing system itself gets reverse engineered and the static salt that is used for all the hashes get leaked which means all the extra protection from the salt is useless as the attacker can then use the salt along with a wordlist to crack the hashes like before. 
 
 An example is listed in the project files in the `hash_pass` file.
 
@@ -251,9 +247,13 @@ A common way this is implemented is by using the time data the account is create
 
 While this is a significant improvement to the original system it is important to state that this too can be reverse-engineered with enough time and resources. This is not a substitute for a strong password policy.
 
+### Hashing Algorithm
+
+It is important to know that the hashing algorithm used (MD5) was not designed for password hashing instead was designed for fast hashing which is contradictory to the goal of keeping information private as the same speed of hashing means its faster for attackers to crack the password as more passwords can be hashed faster. It is better to use a purpose-built algorithm like bycrypt, scrypt or PBKDF2 as it provides better security. 
+
 ## Conclusion
 
-The current system is susceptible to simple brute-force attacks, this is demonstrated with the use of `hashcat` and the `rockyou.txt` wordlist. While the system is theoretically capable protecting against hackers by using MD5 for encryption where the pain-text is needed to decrypt the encrypted hash, the pain-text password can be easily guessed using a wordlist such as `rockyou.txt` as the poor password policy used encouraged users to adopt poor passwords. Thus a strong password policy such as the one provided by NIST is suggested. Further password salting in the backend encryption and decryption system is suggested as even if the passwords provided by the client is weak salting the password provides an added layer of protection. 
+The current system is susceptible to simple brute-force attacks, this is demonstrated with the use of `hashcat` and the `rockyou.txt` wordlist. While the system is theoretically capable of protecting against hackers by using MD5 for hashing where the pain-text is needed to decrypt the hash, the pain-text password can be easily guessed using a wordlist such as `rockyou.txt` as the poor password policy used encouraged users to adopt poor passwords. Thus a strong password policy such as the one provided by NIST is suggested. Further password salting in the backend hashing system is suggested as even if the passwords provided by the client is weak salting the password provides an added layer of protection. Moreover, while MD5 provides some level of protection it is not purpose-built for hashing sensitive information and has many cryptographic weaknesses and has been superseded by a variety of other hash functions and its better to adopt a purpose-built algorithm like bycrypt, scrypt or PBKDF2 as it provides better security.
 
 ## Project Files
 
