@@ -1,0 +1,3 @@
+# Use this format $hash:$salt
+# hashcat -a 0 -m 20 hash_pass rockyou.txt
+764d5a40514056152b58411008b5b609:cDEFs8XdM
